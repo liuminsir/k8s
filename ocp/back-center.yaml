@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: back-center
+  namespace: ocp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: back-center
+  template:
+    metadata:
+      labels:
+        app: back-center
+    spec:
+      containers:
+      - name: back-center
+        image: liumin/back-center:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        env:
+        - name: "GATEWAY_API_URL"
+          value: "http://api-gateway.test.com/"
+        - name: "CLOUD_EUREKA_UR"
+          value: "http://eureka.test.com/"
+        envFrom:
+        - configMapRef:
+            name: ocp-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: back-center
+  namespace: ocp
+spec:
+  type: 
+  selector:
+    app: back-center
+  ports:
+  - port: 80
+    targetPort: 80
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: back-center
+  namespace: ocp
+spec:
+  rules:
+  - host: back-center.test.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: back-center
+          servicePort: 80

@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: auth-center-mysql
+  namespace: ocp
+spec:
+  serviceName: "auth-center"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-center-mysql
+  template:
+    metadata:
+      labels:
+        app: auth-center-mysql
+    spec:
+      containers:
+      - name: auth-center-mysql
+        image: liumin/auth-center-mysql:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3306
+        env:
+        - name: "MYSQL_ROOT_PASSWORD"
+          value: "root"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-center
+  namespace: ocp
+spec:
+  type: 
+  selector:
+    app: auth-center-mysql
+  ports:
+  - port: 3306
+    targetPort: 3306

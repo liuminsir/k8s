@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-center
+  namespace: ocp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-center
+  template:
+    metadata:
+      labels:
+        app: user-center
+    spec:
+      containers:
+      - name: user-center
+        image: liumin/user-center:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 7000
+        envFrom:
+        - configMapRef:
+            name: ocp-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-center-server
+  namespace: ocp
+spec:
+  type: 
+  selector:
+    app: user-center
+  ports:
+  - port: 7000
+    targetPort: 7000
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: user-center
+  namespace: ocp
+spec:
+  rules:
+  - host: user-center.test.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: user-center-server
+          servicePort: 7000

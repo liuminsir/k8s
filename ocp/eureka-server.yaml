@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: eureka
+  namespace: ocp
+spec:
+  serviceName: "eureka"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: eureka
+  template:
+    metadata:
+      labels:
+        app: eureka
+    spec:
+      containers:
+      - name: eureka
+        image: liumin/eureka-server:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 1111
+        env:
+        - name: "eureka.client.service-url.defaultZone"
+          value: "http://eureka-0.eureka.ocp.svc.cluster.local:1111/eureka,http://eureka-1.eureka.ocp.svc.cluster.local:1111/eureka,http://eureka-2.eureka.ocp.svc.cluster.local:1111/eureka"
+        - name: "eureka.instance.prefer-ip-address"
+          value: "false"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eureka
+  namespace: ocp
+spec:
+  type: NodePort
+  selector:
+    app: eureka
+  ports:
+  - port: 1111
+    targetPort: 1111
+    nodePort: 31111
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: eureka
+  namespace: ocp
+spec:
+  rules:
+  - host: eureka.test.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: eureka
+          servicePort: 1111

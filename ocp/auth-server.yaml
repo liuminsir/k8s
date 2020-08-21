@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-server
+  namespace: ocp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-server
+  template:
+    metadata:
+      labels:
+        app: auth-server
+    spec:
+      containers:
+      - name: auth-server
+        image: liumin/auth-server:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        env:
+        - name: "eureka.client.serviceUrl.defaultZone"
+          value: "http://eureka-0.eureka.ocp.svc.cluster.local:1111/eureka,http://eureka-1.eureka.ocp.svc.cluster.local:1111/eureka,http://eureka-2.eureka.ocp.svc.cluster.local:1111/eureka"
+        - name: "spring.datasource.druid.core.url"
+          value: "jdbc:mysql://auth-center:3306/oauth-center?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false"
+        - name: "spring.datasource.druid.log.url"
+          value: "jdbc:mysql://log-center:3306/oauth-center?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false"
+        - name: "spring.redis.host"
+          value: "redis-service"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-server
+  namespace: ocp
+spec:
+  type: 
+  selector:
+    app: auth-server
+  ports:
+  - port: 8000
+    targetPort: 8000
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: auth-server
+  namespace: ocp
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target：/
+spec:
+  rules:
+  - host: auth-server.test.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: auth-server
+          servicePort: 8000

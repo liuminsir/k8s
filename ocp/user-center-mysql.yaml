@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: user-center-mysql
+  namespace: ocp
+spec:
+  serviceName: "user-center"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-center-mysql
+  template:
+    metadata:
+      labels:
+        app: user-center-mysql
+    spec:
+      containers:
+      - name: user-center-mysql
+        image: liumin/user-center-mysql:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3306
+        env:
+        - name: "MYSQL_ROOT_PASSWORD"
+          value: "root"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-center
+  namespace: ocp
+spec:
+  type: 
+  selector:
+    app: user-center-mysql
+  ports:
+  - port: 3306
+    targetPort: 3306

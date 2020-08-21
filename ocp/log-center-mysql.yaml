@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: log-center-mysql
+  namespace: ocp
+spec:
+  serviceName: "log-center"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: log-center-mysql
+  template:
+    metadata:
+      labels:
+        app: log-center-mysql
+    spec:
+      containers:
+      - name: log-center-mysql
+        image: liumin/log-center-mysql:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3306
+        env:
+        - name: "MYSQL_ROOT_PASSWORD"
+          value: "root"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: log-center
+  namespace: ocp
+spec:
+  type: 
+  selector:
+    app: log-center-mysql
+  ports:
+  - port: 3306
+    targetPort: 3306
