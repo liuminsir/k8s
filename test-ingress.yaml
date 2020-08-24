@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: httpd-ingress
+spec:
+  tls:
+  - hosts:
+    - test.httpd.com
+    secretName: tls-test
+  rules:
+    - host: test.httpd.com
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: httpd-svc
+            servicePort: 80

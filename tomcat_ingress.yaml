@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: tomcat
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: test.tomcat.com
+    http:
+     paths:
+     - path: /
+       backend:
+          serviceName: tomcat-svc
+          servicePort: 8080
+  tls:
+  - hosts:
+    - test.tomcat.com
+    secretName: tls-test
